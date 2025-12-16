@@ -1,0 +1,266 @@
+﻿@model List<DBClass>;
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div>
+    <table style="width:50%; text-align:center;">
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>電話</th>
+                <th>地址</th>
+                <th>性別</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model)
+            {
+                <tr>
+                    <td>@row.name</td>
+                    <td>@row.phone</td>
+                    <td>@row.address</td>
+                    <td>@row.sex</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+<div class="text-center">
+    <div class="formdiv">
+        <h3>新增</h3>
+        <form action="">
+            <div class="form-group">
+                <label>姓名</label>
+                <input name="name"/>                
+            </div>
+            <div class="form-group">
+                <label>電話</label>
+                <input name="phone" />
+            </div>
+            <div class="form-group">
+                <label>地址</label>
+                <input name="address" />
+            </div>
+            <div class="form-group">
+                <label>性別</label>
+                <input name="sex" type="number"/>
+            </div>
+            <div class="from-group">
+                <br />
+                <button type="button" id="insert" name="stn" >送出</button>
+            </div>
+        </form>
+    </div>
+    <br />
+
+    <div class="formdiv">
+        <h3>修改</h3>
+        <form action="">
+            <div class="form-group">
+                <label>舊姓名</label>
+                <input name="oldName" />
+            </div>
+            <div class="form-group">
+                <label>新姓名</label>
+                <input name="newName" />
+            </div>
+            <div class="from-group">
+                <br />
+                <button type="button" id="update" name="stn" >送出</button>
+            </div>
+        </form>
+    </div>
+    <br />
+
+    <div class="formdiv">
+        <h3>刪除</h3>
+        <form action="">
+            <div class="form-group">
+                <label>姓名</label>
+                <input name="name" />
+            </div>
+            <div class="from-group">
+                <br />
+                <button type="button" id="delete" name="stn" >送出</button>
+            </div>
+        </form>
+    </div>
+    <br />
+
+    <div class="formdiv">
+        <h3>查詢</h3>
+        <form action="">
+            <div class="form-group">
+                <label>姓名</label>
+                <input name="name" />
+            </div>
+            <div class="from-group">
+                <br />
+                <button type="button" id="select" name="stn" >送出</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div>
+    <table style="width:50%; text-align:center;" id="selectTable">
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>電話</th>
+                <th>地址</th>
+                <th>性別</th>
+            </tr>
+        </thead>
+        <tbody>           
+            <tr>
+                <td><input id="selectName" /></td>
+                <td><input id="selectPhone" /></td>
+                <td><input id="selectAddress" /></td>
+                <td><input id="selectSex" /></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        $(function(){
+            $("#select").on("click", function(){
+                var $form = $(this).closest('form');
+                console.log("執行select");
+                var dataValue = {
+                    name : $form.find("input[name='name']").val(),
+                    phone : "",
+                    address : "",
+                    sex : 0,
+                    oldName : "",
+                    newName : ""
+                };
+
+                console.log("蒐集到的資料:", dataValue);
+                $.ajax({
+                    type:"post",
+                    url:"/API/ApiSelect",
+                    data:JSON.stringify(dataValue),
+                    contentType:"application/json; charset=utf-8",
+                    dataType:"json",
+
+                    success: function(result){                        
+                        alert("查詢成功");
+
+                        $.each(result.Order, function(index, item) {
+                            $("#selectName").val(item.name);
+                            $("#selectPhone").val(item.phone);
+                            $("#selectAddress").val(item.address);
+                            $("#selectSex").val(item.sex);
+                        });
+                    },
+
+                    error: function (xhr, status, error) {
+                        console.error("Error:", error);
+                        alert("查詢失敗");
+                    }
+                });
+            });
+
+            $("#insert").on("click", function(){
+                var $form = $(this).closest('form');
+
+                var dataValue = {
+                    name : $form.find("input[name='name']").val(),
+                    phone : $form.find("input[name='phone']").val(),
+                    address : $form.find("input[name='address']").val(),
+                    sex : $form.find("input[name='sex']").val(),
+                    oldName : "",
+                    newName : ""
+                };
+
+                console.log("蒐集到的資料:", dataValue);
+                $.ajax({
+                    type:"post",
+                    url:"/API/ApiInsert",
+                    data:JSON.stringify(dataValue),
+                    contentType:"application/json; charset=utf-8",
+                    dataType:"json",
+
+                    success: function(result){
+                        console.log("success:", result);
+                        alert("新增成功");
+                    },
+
+                    error: function (xhr, status, error) {
+                        console.error("Error:", error);
+                        alert("新增失敗");
+                    }
+                });
+            });
+
+            $("#update").on("click", function(){
+                var $form = $(this).closest('form');
+                console.log("執行update");
+                var dataValue = {
+                    oldName : $form.find("input[name='oldName']").val(),
+                    newName : $form.find("input[name='newName']").val(),
+                    name : "",
+                    phone : "",
+                    address : "",
+                    sex : 0
+                };
+
+                console.log("蒐集到的資料:", dataValue);
+                $.ajax({
+                    type:"put",
+                    url:"/API/ApiUpdate",
+                    data:JSON.stringify(dataValue),
+                    contentType:"application/json; charset=utf-8",
+                    dataType:"json",
+
+                    success: function(result){
+                        console.log("success:", result);
+                        alert("修改成功");
+                    },
+
+                    error: function (xhr, status, error) {
+                        console.error("Error:", error);
+                        alert("修改失敗");
+                    }
+                });
+            });
+
+            $("#delete").on("click", function(){
+                var $form = $(this).closest('form');
+                console.log("執行delete");
+                var dataValue = {
+                    name : $form.find("input[name='name']").val(),
+                    phone : "",
+                    address : "",
+                    sex : 0,
+                    oldName : "",
+                    newName : ""
+                };
+
+                console.log("蒐集到的資料:", dataValue);
+                $.ajax({
+                    type:"delete",
+                    url:"/API/ApiDelete",
+                    data:JSON.stringify(dataValue),
+                    contentType:"application/json; charset=utf-8",
+                    dataType:"json",
+
+                    success: function(result){
+                        console.log("success:", result);
+                        alert("刪除成功");
+                    },
+
+                    error: function (xhr, status, error) {
+                        console.error("Error:", error);
+                        alert("刪除失敗");
+                    }
+                });
+            });            
+        });
+    </script>
+}
