@@ -12,18 +12,14 @@ namespace WebApplication3.Views.API
     public class APIController : ControllerBase
     {
         /// <summary> SQL的查詢功能  </summary>
-        /// <param name="select"></param>
+        /// <param data="DBNameInClass">
+        ///     @name varchar(60)	-- 中文名稱
+        /// </param>
         /// <returns> 查詢資料庫用戶的名稱 </returns>
         /// <remarks>
         /// 範例為：
         /// POST /API/ApiSelect{
-        /// "userId": 0,
-        /// "name": "john",
-        /// "oldName": "",
-        /// "newName": "",
-        /// "phone": "",
-        /// "address": "",
-        /// "sex": 0
+        ///     "name": "約翰"
         /// }
         /// </remarks>
         /// <response code="200">查詢成功</response>
@@ -31,10 +27,10 @@ namespace WebApplication3.Views.API
         [HttpPost("ApiSelect")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult ApiSelect([FromBody] DBClass data)
+        public IActionResult ApiSelect([FromBody] DBNameInClass data)
         {
             bool success = false;
-            List<DBClass> selectData = new DBManager().UserSelect(data.name);
+            List<DBSelectOutClass> selectData = new DBManager().UserSelect(data);
 
             if (selectData != null)
                 success = true;
@@ -57,18 +53,26 @@ namespace WebApplication3.Views.API
 
 
         /// <summary> SQL的新增功能  </summary>
-        /// <param name="insert"></param>
+        /// <param data="DBInsertInClass">
+        ///     @Cname nvarchar(60),		-- 中文名稱
+        ///     @Ename nvarchar(40),		-- 英文名稱
+        ///     @Sname nvarchar(40),		-- 簡稱
+        ///     @Email nvarchar(60),		-- 信箱
+        ///     @LoginID nvarchar(30),		-- 登入帳號
+        ///     @LoginPWD nvarchar(60),		-- 登入密碼
+        ///     @CreaterName nvarchar(40)   -- 建立者的中文名稱
+        /// </param>
         /// <returns> 新增資料庫用戶 </returns>
         /// <remarks>
         /// 範例為：
         /// POST /API/ApiInsert{
-        /// "userId": 0,
-        /// "name": "john",
-        /// "oldName": "",
-        /// "newName": "",
-        /// "phone": "0987654321",
-        /// "address": "aaaaaaaaaaaaaaa",
-        /// "sex": 0
+        ///     "cName" : "瑪莉",
+        ///     "eName": "Mary",
+        ///     "sName": "Mary",
+        ///     "eMail": "Mary@Mary.com",
+        ///     "loginID": "Mary",
+        ///     "loginPWD": "Mary",
+        ///     "createrName": "簡文翊"
         /// }
         /// </remarks>
         /// <response code="201">新增成功</response>
@@ -76,10 +80,10 @@ namespace WebApplication3.Views.API
         [HttpPost("ApiInsert")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult ApiInsert([FromBody] DBClass data)
+        public IActionResult ApiInsert([FromBody] DBInsertInClass data)
         {
             bool success = false;
-            success = new DBManager().UserInsert(data.name, data.phone, data.address, data.sex);
+            success = new DBManager().UserInsert(data);
 
             if (success)
                 return Ok(new { status = "success", message = "資料已新增" });
@@ -88,18 +92,16 @@ namespace WebApplication3.Views.API
         }
 
         /// <summary> SQL的修改功能  </summary>
-        /// <param name="update"></param>
+        /// <param data="DBUpdateInClass">
+        ///     @OldName nvarchar(60),
+        ///     @NewName nvarchar(60)
+        /// </param>
         /// <returns> 修改資料庫用戶的名稱 </returns>
         /// <remarks>
         /// 範例為：
         /// POST /API/ApiUpdate{
-        /// "userId": 0,
-        /// "name": "",
-        /// "oldName": "john",
-        /// "newName": "mary",
-        /// "phone": "",
-        /// "address": "",
-        /// "sex": 0
+        ///     "oldName": "約翰",
+        ///     "newName": "約翰尼"
         /// }
         /// </remarks>
         /// <response code="200">修改成功</response>
@@ -107,10 +109,10 @@ namespace WebApplication3.Views.API
         [HttpPut("ApiUpdate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult ApiUpdate([FromBody] DBClass data)
+        public IActionResult ApiUpdate([FromBody] DBUpdateInClass data)
         {
             bool success = false;
-            success = new DBManager().UserUpdate(data.oldName, data.newName);
+            success = new DBManager().UserUpdate(data);
 
             if (success)
                 return Ok(new { status = "success", message = "資料已更新" });
@@ -119,18 +121,14 @@ namespace WebApplication3.Views.API
         }
 
         /// <summary> SQL的刪除功能  </summary>
-        /// <param name="delete"></param>
+        /// <param data="DBNameInClass">
+        ///     "name" nvarchar(40)
+        /// </param>
         /// <returns> 刪除資料庫用戶 </returns>
         /// <remarks>
         /// 範例為：
         /// POST /API/ApiDelete{
-        /// "userId": 0,
-        /// "name": "john",
-        /// "oldName": "",
-        /// "newName": "",
-        /// "phone": "",
-        /// "address": "",
-        /// "sex": 0
+        ///     "name": "約翰"
         /// }
         /// </remarks>
         /// <response code="200">刪除成功</response>
@@ -138,10 +136,10 @@ namespace WebApplication3.Views.API
         [HttpDelete("ApiDelete")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult ApiDelete([FromBody] DBClass data)
+        public IActionResult ApiDelete([FromBody] DBNameInClass data)
         {
             bool success = false;
-            success = new DBManager().UserDelete(data.name);
+            success = new DBManager().UserDelete(data);
 
             if (success)
                 return Ok(new { status = "success", message = "資料已刪除" });

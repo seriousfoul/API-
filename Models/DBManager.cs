@@ -6,36 +6,44 @@ using System.Numerics;
 
 public class DBManager
 {
-    private readonly string conn = "Data Source=(localdb)\\MSSQLLocalDB;Database=test2;User ID=student;Password=student;Trusted_Connection=True";
+    // SQL SERVER 所需參數
+    private readonly string conn = "Data Source=(localdb)\\MSSQLLocalDB;Database=BackendExamHub;User ID=student;Password=student;Trusted_Connection=True";
 
-    public List<DBClass> UserSelect(string name)
+    // 執行Select語法，並回傳給API
+    public List<DBSelectOutClass> UserSelect(DBNameInClass data)
     {
-        List<DBClass> list = new List<DBClass>();
+        List<DBSelectOutClass> list = new List<DBSelectOutClass>();
         try
         {
-            string sql = "UserSelect";
+            string sql = "ACPD_Select";
             var sqlConnect = new SqlConnection(conn);
             var sqlCommamd = new SqlCommand(sql, sqlConnect);
             sqlCommamd.CommandType = CommandType.StoredProcedure;
-            sqlCommamd.Parameters.AddWithValue("@name", name);
+            sqlCommamd.Parameters.AddWithValue("@name", data.name);
             sqlConnect.Open();
             SqlDataReader reader = sqlCommamd.ExecuteReader();
             if (reader.HasRows)
             {
                 while (reader.Read())
                 {
-                    int sex = 0;
-                    if (reader.GetBoolean(4))
-                        sex = 1;                    
-
                     list.Add(
-                        new DBClass
+                        new DBSelectOutClass
                         {
-                            userId = reader.GetInt32(0),
-                            name = reader.GetString(1),
-                            phone = reader.GetString(2),
-                            address = reader.GetString(3),
-                            sex = sex
+                            sID = reader["ACPD_SID"].ToString(),
+                            cName = reader["ACPD_Cname"].ToString(),
+                            eName = reader["ACPD_Ename"].ToString(),
+                            sName = reader["ACPD_Sname"].ToString(),
+                            eMail = reader["ACPD_EMail"].ToString(),
+                            status = (byte)reader["ACPD_Status"],
+                            stop = (bool)reader["ACPD_Stop"],
+                            stopMemo = reader["ACPD_StopMemo"].ToString(),
+                            loginID = reader["ACPD_LoginID"].ToString(),
+                            loginPWD = reader["ACPD_LoginPWD"].ToString(),
+                            memo = reader["ACPD_Memo"].ToString(),
+                            nowDateTime = reader.GetDateTime(reader.GetOrdinal("ACPD_NowDateTime")),
+                            nowID = reader["ACPD_NowID"].ToString(),
+                            updDateTime = reader.GetDateTime(reader.GetOrdinal("ACPD_UPDDateTime")),
+                            updID = reader["ACPD_UPDID"].ToString()
                         }
                     );
                 }
@@ -55,39 +63,20 @@ public class DBManager
     }
 
 
-    public bool UserInsert(string name = "john", string phone = "0912345678", string address = "abcd",int sex = 0) {
+    public bool UserInsert(DBInsertInClass data) {
         try
         {
-            string sql = "UserInsert";
+            string sql = "ACPD_Insert";
             var sqlConnect = new SqlConnection(conn);
             var sqlCommamd = new SqlCommand(sql, sqlConnect);
             sqlCommamd.CommandType = CommandType.StoredProcedure;
-            sqlCommamd.Parameters.AddWithValue("@name", name);
-            sqlCommamd.Parameters.AddWithValue("@phone", phone);
-            sqlCommamd.Parameters.AddWithValue("@address", address);
-            sqlCommamd.Parameters.AddWithValue("@sex", sex);
-            sqlConnect.Open();
-            int count = sqlCommamd.ExecuteNonQuery();
-            sqlConnect.Close();
-
-            return count > 0;
-        }
-        catch (Exception ex)
-        {
-            return false;
-        }
-    }
-
-    public bool UserUpdate(string oldName = "john", string newName = "john")
-    {
-        try
-        {
-            var sql = "UserUpdate";
-            var sqlConnect = new SqlConnection(conn);
-            var sqlCommamd = new SqlCommand(sql, sqlConnect);
-            sqlCommamd.CommandType = CommandType.StoredProcedure;
-            sqlCommamd.Parameters.AddWithValue("@oldName", oldName);
-            sqlCommamd.Parameters.AddWithValue("@newName", newName);
+            sqlCommamd.Parameters.AddWithValue("@Cname", data.cName);
+            sqlCommamd.Parameters.AddWithValue("@Ename", data.eName);
+            sqlCommamd.Parameters.AddWithValue("@Sname", data.sName);
+            sqlCommamd.Parameters.AddWithValue("@Email", data.eMail);
+            sqlCommamd.Parameters.AddWithValue("@LoginID", data.loginID);
+            sqlCommamd.Parameters.AddWithValue("@LoginPWD", data.loginPWD);
+            sqlCommamd.Parameters.AddWithValue("@CreaterName", data.createrName);
 
             sqlConnect.Open();
             int count = sqlCommamd.ExecuteNonQuery();
@@ -101,15 +90,17 @@ public class DBManager
         }
     }
 
-    public bool UserDelete(string name)
+    public bool UserUpdate(DBUpdateInClass data)
     {
         try
         {
-            string sql = "UserDelete";
+            var sql = "ACPD_Update";
             var sqlConnect = new SqlConnection(conn);
             var sqlCommamd = new SqlCommand(sql, sqlConnect);
             sqlCommamd.CommandType = CommandType.StoredProcedure;
-            sqlCommamd.Parameters.AddWithValue("@name", name);
+            sqlCommamd.Parameters.AddWithValue("@oldName", data.oldName);
+            sqlCommamd.Parameters.AddWithValue("@newName", data.newName);
+
             sqlConnect.Open();
             int count = sqlCommamd.ExecuteNonQuery();
             sqlConnect.Close();
@@ -122,32 +113,60 @@ public class DBManager
         }
     }
 
-    public List<DBClass> AllUserSelect()
+    public bool UserDelete(DBNameInClass data)
     {
-        List<DBClass> list = new List<DBClass>();
         try
         {
-            string sql = "select * from [user]";
+            string sql = "ACPD_Delete";
+            var sqlConnect = new SqlConnection(conn);
+            var sqlCommamd = new SqlCommand(sql, sqlConnect);
+            sqlCommamd.CommandType = CommandType.StoredProcedure;
+            sqlCommamd.Parameters.AddWithValue("@name", data.name);
+            sqlConnect.Open();
+            int count = sqlCommamd.ExecuteNonQuery();
+            sqlConnect.Close();
+
+            return count > 0;
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+    }
+
+    public List<DBSelectOutClass> AllUserSelect()
+    {
+        List<DBSelectOutClass> list = new List<DBSelectOutClass>();
+        try
+        {
+            string sql = "select * from MyOffice_ACPD";
             var sqlConnect = new SqlConnection(conn);
             var sqlCommamd = new SqlCommand(sql, sqlConnect);
             sqlConnect.Open();
+                        
             SqlDataReader reader = sqlCommamd.ExecuteReader();
             if (reader.HasRows)
             {
                 while (reader.Read())
                 {
-                    int sex = 0;
-                    if (reader.GetBoolean(4))
-                        sex = 1;
-
                     list.Add(
-                        new DBClass
-                        {
-                            userId = reader.GetInt32(0),
-                            name = reader.GetString(1),
-                            phone = reader.GetString(2),
-                            address = reader.GetString(3),
-                            sex = sex
+                        new DBSelectOutClass
+                        {                            
+                            sID = reader["ACPD_SID"].ToString(),
+                            cName = reader["ACPD_Cname"].ToString(),
+                            eName = reader["ACPD_Ename"].ToString(),
+                            sName = reader["ACPD_Sname"].ToString(),
+                            eMail = reader["ACPD_EMail"].ToString(),
+                            status = (byte)reader["ACPD_Status"],
+                            stop = (bool)reader["ACPD_Stop"],
+                            stopMemo = reader["ACPD_StopMemo"].ToString(),
+                            loginID = reader["ACPD_LoginID"].ToString(),
+                            loginPWD = reader["ACPD_LoginPWD"].ToString(),
+                            memo = reader["ACPD_Memo"].ToString(),
+                            nowDateTime = reader.GetDateTime(reader.GetOrdinal("ACPD_NowDateTime")),
+                            nowID = reader["ACPD_NowID"].ToString(),
+                            updDateTime = reader.GetDateTime(reader.GetOrdinal("ACPD_UPDDateTime")),
+                            updID = reader["ACPD_UPDID"].ToString()
                         }
                     );
                 }
@@ -165,9 +184,6 @@ public class DBManager
             return null;
         }
     }
-
-
-
 }
 
 

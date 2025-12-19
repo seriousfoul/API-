@@ -20,7 +20,7 @@ namespace WebApplication3.Controllers
 
         public IActionResult Index()
         {
-            List<DBClass> list = new DBManager().AllUserSelect();
+            List<DBSelectOutClass> list = new DBManager().AllUserSelect();
             return View(model:list);
         }
 
